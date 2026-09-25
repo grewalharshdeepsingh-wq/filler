@@ -60,11 +60,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             if (data.runningTabId) {
                 sendMessageSafe(data.runningTabId, { action: 'stop' });
             }
+            chrome.storage.local.set({ isRunning: false, runningState: null, runningTabId: null });
         });
     }
     // Content script finished execution
     else if (msg.action === 'executionFinished') {
-        chrome.storage.local.set({ isRunning: false, runningTabId: null });
+        chrome.storage.local.set({ isRunning: false, runningState: null, runningTabId: null });
     }
 
     // Relay progress updates from content script to popup

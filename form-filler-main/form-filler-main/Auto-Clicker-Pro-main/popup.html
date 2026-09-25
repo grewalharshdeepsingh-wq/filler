@@ -241,6 +241,15 @@
                 <span>💡 Click <b>📄 Set as Para Box</b> on any text field to inject TXT paragraphs during rotations!</span>
             </div>
 
+            <!-- Quick Add Bar -->
+            <div class="step-quick-bar">
+                <span class="quick-bar-label">Quick Add:</span>
+                <button id="addBeforePageBtn" class="quick-add-btn" title="Add Move to Before Page (History Back)">⬅️ Before Page</button>
+                <button id="addFrontPageBtn" class="quick-add-btn" title="Add Move to Front Page (History Forward)">➡️ Front Page</button>
+                <button id="addPageUpBtn" class="quick-add-btn" title="Add Scroll Page Up">⬆️ Page Up</button>
+                <button id="addPageDownBtn" class="quick-add-btn" title="Add Scroll Page Down">⬇️ Page Down</button>
+            </div>
+
             <ul id="stepList"></ul>
         </div>
 
@@ -266,6 +275,10 @@
                     <option value="fillStatic">✍️ Static Text Field (Same info every rotation)</option>
                     <option value="pasteClipboard">📋 Paste from Clipboard (Pastes system clipboard)</option>
                     <option value="selectOption">🔽 Dropdown Option Selection</option>
+                    <option value="navigateBack">⬅️ Move to Before Page (History Back)</option>
+                    <option value="navigateForward">➡️ Move to Front Page (History Forward)</option>
+                    <option value="pageUp">⬆️ Page Up (Scroll Up)</option>
+                    <option value="pageDown">⬇️ Page Down (Scroll Down)</option>
                 </select>
             </div>
 

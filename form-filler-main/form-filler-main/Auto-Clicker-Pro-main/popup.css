@@ -1823,3 +1823,71 @@ input:checked + .toggle-track.small .toggle-thumb { left: 14px; }
     margin: 0;
 }
 
+/* Quick Add Actions Bar */
+.step-quick-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.quick-bar-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 2px;
+}
+
+.quick-add-btn {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.quick-add-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+}
+
+#addBeforePageBtn:hover, #addFrontPageBtn:hover {
+    border-color: rgba(59, 130, 246, 0.4);
+    color: #60a5fa;
+}
+
+#addPageUpBtn:hover, #addPageDownBtn:hover {
+    border-color: rgba(52, 211, 153, 0.4);
+    color: #34d399;
+}
+
+#stepList li.step-nav {
+    border-left-color: #3b82f6;
+}
+
+#stepList li.step-scroll {
+    border-left-color: #10b981;
+}
+
+#stepList li.step-nav .step-num {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+#stepList li.step-scroll .step-num {
+    background: linear-gradient(135deg, #059669, #10b981);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+

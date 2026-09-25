@@ -43,11 +43,20 @@ let branchNoMatchSteps = [];
 
 // Initialize on load
 const init = () => {
-    chrome.storage.local.get(['isRecording', 'smartMode', 'steps'], (data) => {
+    chrome.storage.local.get(['isRecording', 'smartMode', 'steps', 'isRunning', 'runningState', 'loopSettings'], (data) => {
         smartModeCached = data.smartMode !== undefined ? data.smartMode : true;
         recordedSteps = data.steps || [];
         if (data.isRecording) {
             startRecordingLocally();
+        }
+        if (data.isRunning && data.runningState && data.runningState.active) {
+            const state = data.runningState;
+            const loopCfg = state.loopConfig || data.loopSettings;
+            const nextStep = state.stepIndex !== undefined ? state.stepIndex : 0;
+            const nextLoop = state.currentLoop !== undefined ? state.currentLoop : 1;
+            setTimeout(() => {
+                executeSteps(data.steps || [], loopCfg, nextStep, nextLoop);
+            }, 1000);
         }
     });
 };
@@ -972,10 +981,18 @@ const showRecordingBanner = (branch = null) => {
     `;
 
     const toolControls = !branch ? `
-        <div style="display:flex; gap:4px; margin-top:4px;">
-            <button id="acp-tool-color-btn" class="acp-field-pill-btn" style="font-size:10px; color:#80deea;">🎨 Color Cond</button>
-            <button id="acp-tool-text-btn" class="acp-field-pill-btn" style="font-size:10px; color:#c4b5fd;">📝 Text Cond</button>
-            <button id="acp-tool-area-btn" class="acp-field-pill-btn" style="font-size:10px; color:#fde047;">📐 Area</button>
+        <div style="display:flex; flex-direction:column; gap:4px; margin-top:4px;">
+            <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                <button id="acp-tool-color-btn" class="acp-field-pill-btn" style="font-size:10px; color:#80deea;">🎨 Color</button>
+                <button id="acp-tool-text-btn" class="acp-field-pill-btn" style="font-size:10px; color:#c4b5fd;">📝 Text</button>
+                <button id="acp-tool-area-btn" class="acp-field-pill-btn" style="font-size:10px; color:#fde047;">📐 Area</button>
+            </div>
+            <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                <button id="acp-nav-back-btn" class="acp-field-pill-btn" style="font-size:10px; color:#60a5fa;" title="Move to Before Page (History Back)">⬅️ Before Page</button>
+                <button id="acp-nav-forward-btn" class="acp-field-pill-btn" style="font-size:10px; color:#60a5fa;" title="Move to Front Page (History Forward)">➡️ Front Page</button>
+                <button id="acp-scroll-up-btn" class="acp-field-pill-btn" style="font-size:10px; color:#34d399;" title="Scroll Page Up">⬆️ Page Up</button>
+                <button id="acp-scroll-down-btn" class="acp-field-pill-btn" style="font-size:10px; color:#34d399;" title="Scroll Page Down">⬇️ Page Down</button>
+            </div>
         </div>
     ` : '';
 
@@ -1046,6 +1063,78 @@ const showRecordingBanner = (branch = null) => {
         const areaToolBtn = document.getElementById('acp-tool-area-btn');
         if (areaToolBtn) {
             areaToolBtn.onclick = (e) => { e.stopPropagation(); startAreaSelectionFlow(); };
+        }
+
+        const navBackBtn = document.getElementById('acp-nav-back-btn');
+        if (navBackBtn) {
+            navBackBtn.onclick = (e) => {
+                e.stopPropagation();
+                const step = {
+                    action: 'navigateBack',
+                    title: 'Move to Before Page',
+                    delay: 1500
+                };
+                recordedSteps.push(step);
+                saveSteps();
+                showBannerToast('⬅️ Before Page recorded - Navigating...');
+                setTimeout(() => {
+                    window.history.back();
+                }, 500);
+            };
+        }
+
+        const navForwardBtn = document.getElementById('acp-nav-forward-btn');
+        if (navForwardBtn) {
+            navForwardBtn.onclick = (e) => {
+                e.stopPropagation();
+                const step = {
+                    action: 'navigateForward',
+                    title: 'Move to Front Page',
+                    delay: 1500
+                };
+                recordedSteps.push(step);
+                saveSteps();
+                showBannerToast('➡️ Front Page recorded - Navigating...');
+                setTimeout(() => {
+                    window.history.forward();
+                }, 500);
+            };
+        }
+
+        const scrollUpBtn = document.getElementById('acp-scroll-up-btn');
+        if (scrollUpBtn) {
+            scrollUpBtn.onclick = (e) => {
+                e.stopPropagation();
+                const amount = Math.round(window.innerHeight * 0.8);
+                const step = {
+                    action: 'pageUp',
+                    title: 'Scroll Page Up',
+                    amount: amount,
+                    delay: 1000
+                };
+                recordedSteps.push(step);
+                saveSteps();
+                window.scrollBy({ top: -amount, behavior: 'smooth' });
+                showBannerToast('⬆️ Recorded: Page Up');
+            };
+        }
+
+        const scrollDownBtn = document.getElementById('acp-scroll-down-btn');
+        if (scrollDownBtn) {
+            scrollDownBtn.onclick = (e) => {
+                e.stopPropagation();
+                const amount = Math.round(window.innerHeight * 0.8);
+                const step = {
+                    action: 'pageDown',
+                    title: 'Scroll Page Down',
+                    amount: amount,
+                    delay: 1000
+                };
+                recordedSteps.push(step);
+                saveSteps();
+                window.scrollBy({ top: amount, behavior: 'smooth' });
+                showBannerToast('⬇️ Recorded: Page Down');
+            };
         }
     }
 };
@@ -1644,21 +1733,54 @@ const executeStep = async (step) => {
         const target = document.elementFromPoint(vx, vy);
         if (target) dispatchClickEvents(target);
     }
+
+    // --- Page Up (Scroll Up) ---
+    if (step.action === 'pageUp') {
+        const amount = step.amount || Math.round(window.innerHeight * 0.8);
+        window.scrollBy({ top: -amount, behavior: 'smooth' });
+        createClickIndicator(window.innerWidth / 2, 80, 'smart');
+        return;
+    }
+
+    // --- Page Down (Scroll Down) ---
+    if (step.action === 'pageDown') {
+        const amount = step.amount || Math.round(window.innerHeight * 0.8);
+        window.scrollBy({ top: amount, behavior: 'smooth' });
+        createClickIndicator(window.innerWidth / 2, Math.min(window.innerHeight - 80, 500), 'smart');
+        return;
+    }
+
+    // --- Move to Before Page (History Back) ---
+    if (step.action === 'navigateBack' || step.action === 'pageBack') {
+        showBannerToast('⬅️ Moving to Before Page...');
+        window.history.back();
+        await new Promise(r => setTimeout(r, 4000));
+        return;
+    }
+
+    // --- Move to Front Page (History Forward) ---
+    if (step.action === 'navigateForward' || step.action === 'pageForward') {
+        showBannerToast('➡️ Moving to Front Page...');
+        window.history.forward();
+        await new Promise(r => setTimeout(r, 4000));
+        return;
+    }
 };
 
-// Master Sequence Runner
-const executeSteps = async (steps, loop) => {
+// Master Sequence Runner with cross-page navigation resumption
+const executeSteps = async (steps, loop, startStepIndex = 0, startLoop = 1) => {
     stopExecution = false;
     const loopConfig = loop || { enabled: false, infinite: false, count: 1, delay: 2000 };
     const loopCount = loopConfig.enabled ? (loopConfig.infinite ? Infinity : (loopConfig.count || 1)) : 1;
     const rotationDelay = loopConfig.delay || 2000;
 
-    let currentLoop = 0;
+    let currentLoop = startLoop - 1;
 
     while (currentLoop < loopCount && !stopExecution) {
         currentLoop++;
+        const initialI = (currentLoop === startLoop) ? startStepIndex : 0;
 
-        for (let i = 0; i < steps.length; i++) {
+        for (let i = initialI; i < steps.length; i++) {
             if (stopExecution) break;
 
             contentSend({
@@ -1669,6 +1791,18 @@ const executeSteps = async (steps, loop) => {
                     currentLoop: currentLoop,
                     totalLoops: loopCount,
                     action: steps[i].action
+                }
+            });
+
+            // Save running state before executing step in case a navigation occurs
+            const nextStepIndex = i + 1 < steps.length ? i + 1 : 0;
+            const nextLoop = i + 1 < steps.length ? currentLoop : currentLoop + 1;
+            await storageSet({
+                runningState: {
+                    active: true,
+                    stepIndex: nextStepIndex,
+                    currentLoop: nextLoop,
+                    loopConfig: loopConfig
                 }
             });
 
@@ -1693,5 +1827,6 @@ const executeSteps = async (steps, loop) => {
         }
     }
 
+    await storageSet({ runningState: null, isRunning: false });
     contentSend({ action: 'executionFinished' });
 };

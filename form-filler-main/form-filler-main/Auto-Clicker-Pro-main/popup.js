@@ -258,6 +258,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 if ((step.tagName === 'TEXTAREA' || step.tagName === 'INPUT') && !step.isCheckbox) {
                     toggleParaBtnHtml = `<button class="toggle-para-btn" data-index="${index}" title="Convert into dynamic paragraph box">📄 Set as Para Box</button>`;
                 }
+            } else if (step.action === 'navigateBack' || step.action === 'pageBack') {
+                li.classList.add('step-nav');
+                badgeHtml = '<span class="step-type-badge" style="background:rgba(59,130,246,0.2); border:1px solid rgba(59,130,246,0.4); color:#60a5fa;">⬅️ BEFORE PAGE</span>';
+                titleText = 'Move to Before Page (History Back)';
+                subText = `Navigates back to previous page · ${step.delay || 1500}ms`;
+            } else if (step.action === 'navigateForward' || step.action === 'pageForward') {
+                li.classList.add('step-nav');
+                badgeHtml = '<span class="step-type-badge" style="background:rgba(59,130,246,0.2); border:1px solid rgba(59,130,246,0.4); color:#60a5fa;">➡️ FRONT PAGE</span>';
+                titleText = 'Move to Front Page (History Forward)';
+                subText = `Navigates forward to next page · ${step.delay || 1500}ms`;
+            } else if (step.action === 'pageUp') {
+                li.classList.add('step-scroll');
+                badgeHtml = '<span class="step-type-badge" style="background:rgba(52,211,153,0.2); border:1px solid rgba(52,211,153,0.4); color:#34d399;">⬆️ PAGE UP</span>';
+                titleText = 'Scroll Page Up';
+                subText = `Scrolls viewport up · ${step.delay || 1000}ms`;
+            } else if (step.action === 'pageDown') {
+                li.classList.add('step-scroll');
+                badgeHtml = '<span class="step-type-badge" style="background:rgba(52,211,153,0.2); border:1px solid rgba(52,211,153,0.4); color:#34d399;">⬇️ PAGE DOWN</span>';
+                titleText = 'Scroll Page Down';
+                subText = `Scrolls viewport down · ${step.delay || 1000}ms`;
             } else {
                 li.classList.add('step-click');
                 badgeHtml = '<span class="step-type-badge type-click">🖱️ CLICK</span>';
@@ -765,6 +785,67 @@ document.addEventListener('DOMContentLoaded', () => {
     loopInfinite.addEventListener('change', handleLoopControlsChange);
     clearStepsBtn.addEventListener('click', clearAllSteps);
 
+    // Quick Add Step Buttons
+    const addBeforePageBtn = document.getElementById('addBeforePageBtn');
+    if (addBeforePageBtn) {
+        addBeforePageBtn.addEventListener('click', () => {
+            chrome.storage.local.get(['steps'], (data) => {
+                const steps = data.steps || [];
+                steps.push({
+                    action: 'navigateBack',
+                    title: 'Move to Before Page',
+                    delay: 1500
+                });
+                chrome.storage.local.set({ steps });
+            });
+        });
+    }
+
+    const addFrontPageBtn = document.getElementById('addFrontPageBtn');
+    if (addFrontPageBtn) {
+        addFrontPageBtn.addEventListener('click', () => {
+            chrome.storage.local.get(['steps'], (data) => {
+                const steps = data.steps || [];
+                steps.push({
+                    action: 'navigateForward',
+                    title: 'Move to Front Page',
+                    delay: 1500
+                });
+                chrome.storage.local.set({ steps });
+            });
+        });
+    }
+
+    const addPageUpBtn = document.getElementById('addPageUpBtn');
+    if (addPageUpBtn) {
+        addPageUpBtn.addEventListener('click', () => {
+            chrome.storage.local.get(['steps'], (data) => {
+                const steps = data.steps || [];
+                steps.push({
+                    action: 'pageUp',
+                    title: 'Scroll Page Up',
+                    delay: 1000
+                });
+                chrome.storage.local.set({ steps });
+            });
+        });
+    }
+
+    const addPageDownBtn = document.getElementById('addPageDownBtn');
+    if (addPageDownBtn) {
+        addPageDownBtn.addEventListener('click', () => {
+            chrome.storage.local.get(['steps'], (data) => {
+                const steps = data.steps || [];
+                steps.push({
+                    action: 'pageDown',
+                    title: 'Scroll Page Down',
+                    delay: 1000
+                });
+                chrome.storage.local.set({ steps });
+            });
+        });
+    }
+
     // ========================================================
     // Progress Listener
     // ========================================================
@@ -789,6 +870,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (action === 'fillParagraph') actionDesc = '📄 Filling Paragraph';
         else if (action === 'selectOption') actionDesc = '🔽 Selecting Option';
         else if (action === 'fillStatic') actionDesc = '✍️ Filling Field';
+        else if (action === 'navigateBack' || action === 'pageBack') actionDesc = '⬅️ Moving to Before Page';
+        else if (action === 'navigateForward' || action === 'pageForward') actionDesc = '➡️ Moving to Front Page';
+        else if (action === 'pageUp') actionDesc = '⬆️ Scrolling Page Up';
+        else if (action === 'pageDown') actionDesc = '⬇️ Scrolling Page Down';
         else actionDesc = '🖱️ Clicking';
 
         loopCounter.textContent = `Rotation ${currentLoop} of ${totalLoopDisplay} · Step ${stepIndex + 1}/${totalSteps} (${actionDesc})`;
