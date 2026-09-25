@@ -254,36 +254,38 @@ document.addEventListener('DOMContentLoaded', () => {
                     badgeHtml = '<span class="step-type-badge type-smart">🎯 SMART CLICK</span>';
                     titleText = step.elementText ? `Click: "${step.elementText.substring(0, 25)}"` : `<${(step.tagName || 'ELEMENT').toLowerCase()}>`;
                 }
-                subText = `${step.selector || 'element'} · ${step.delay || 1000}ms`;
+                subText = step.selector || (step.tagName ? `<${step.tagName.toLowerCase()}>` : 'element');
                 if ((step.tagName === 'TEXTAREA' || step.tagName === 'INPUT') && !step.isCheckbox) {
                     toggleParaBtnHtml = `<button class="toggle-para-btn" data-index="${index}" title="Convert into dynamic paragraph box">📄 Set as Para Box</button>`;
                 }
             } else if (step.action === 'navigateBack' || step.action === 'pageBack') {
                 li.classList.add('step-nav');
                 badgeHtml = '<span class="step-type-badge" style="background:rgba(59,130,246,0.2); border:1px solid rgba(59,130,246,0.4); color:#60a5fa;">⬅️ BEFORE PAGE</span>';
-                titleText = 'Move to Before Page (History Back)';
-                subText = `Navigates back to previous page · ${step.delay || 1500}ms`;
+                titleText = 'Move to Before Page';
+                subText = 'window.history.back()';
             } else if (step.action === 'navigateForward' || step.action === 'pageForward') {
                 li.classList.add('step-nav');
                 badgeHtml = '<span class="step-type-badge" style="background:rgba(59,130,246,0.2); border:1px solid rgba(59,130,246,0.4); color:#60a5fa;">➡️ FRONT PAGE</span>';
-                titleText = 'Move to Front Page (History Forward)';
-                subText = `Navigates forward to next page · ${step.delay || 1500}ms`;
+                titleText = 'Move to Front Page';
+                subText = 'window.history.forward()';
             } else if (step.action === 'pageUp') {
                 li.classList.add('step-scroll');
                 badgeHtml = '<span class="step-type-badge" style="background:rgba(52,211,153,0.2); border:1px solid rgba(52,211,153,0.4); color:#34d399;">⬆️ PAGE UP</span>';
                 titleText = 'Scroll Page Up';
-                subText = `Scrolls viewport up · ${step.delay || 1000}ms`;
+                subText = 'Scrolls viewport up';
             } else if (step.action === 'pageDown') {
                 li.classList.add('step-scroll');
                 badgeHtml = '<span class="step-type-badge" style="background:rgba(52,211,153,0.2); border:1px solid rgba(52,211,153,0.4); color:#34d399;">⬇️ PAGE DOWN</span>';
                 titleText = 'Scroll Page Down';
-                subText = `Scrolls viewport down · ${step.delay || 1000}ms`;
+                subText = 'Scrolls viewport down';
             } else {
                 li.classList.add('step-click');
                 badgeHtml = '<span class="step-type-badge type-click">🖱️ CLICK</span>';
                 titleText = `Click at (${step.x || 0}, ${step.y || 0})`;
-                subText = `Delay: ${step.delay || 1000}ms`;
+                subText = `Position: X:${step.x || 0}, Y:${step.y || 0}`;
             }
+
+            const stepDelay = (step.delay !== undefined && !isNaN(Number(step.delay))) ? Math.max(0, Number(step.delay)) : 1000;
 
             li.innerHTML = `
                 <div class="step-reorder-group">
@@ -298,14 +300,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="step-info">
                     <div class="step-title">
                         ${badgeHtml}
-                        <span style="overflow:hidden; text-overflow:ellipsis;">${titleText}</span>
+                        <span style="overflow:hidden; text-overflow:ellipsis;" title="${titleText}">${titleText}</span>
                     </div>
-                    <div class="step-sub">
-                        ${subText} · 
-                        <span class="step-delay-inline" title="Click to change delay for this step">
-                            ⏱️ <input type="number" class="inline-step-delay-input" data-index="${index}" value="${step.delay !== undefined ? step.delay : 1000}" min="0" step="100" />ms
-                        </span>
+                    <div class="step-sub" title="${subText}">
+                        ${subText}
                     </div>
+                </div>
+                <div class="step-timing-badge" title="Timing delay before executing this click (ms)">
+                    <span class="timing-icon">⏱️</span>
+                    <input type="number" class="inline-step-delay-input" data-index="${index}" value="${stepDelay}" min="0" step="50" title="Click or type to edit timing (ms)" />
+                    <span class="timing-unit">ms</span>
                 </div>
                 <div class="step-actions">
                     ${toggleParaBtnHtml}
@@ -314,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <polygon points="5 3 19 12 5 21 5 3"></polygon>
                         </svg>
                     </button>
-                    <button class="action-btn edit-btn" title="Edit Step" data-index="${index}">
+                    <button class="action-btn edit-btn" title="Edit Step Details & Delay" data-index="${index}">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -332,19 +336,31 @@ document.addEventListener('DOMContentLoaded', () => {
             stepList.appendChild(li);
         });
 
-        // Inline Delay Change Handlers
+        // Inline Delay Change Handlers with visual confirmation
         document.querySelectorAll('.inline-step-delay-input').forEach(input => {
             input.addEventListener('click', (e) => e.stopPropagation());
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    input.blur();
+                }
+            });
             input.addEventListener('change', (e) => {
                 e.stopPropagation();
                 const idx = parseInt(input.dataset.index);
-                const val = Math.max(0, parseInt(input.value) || 0);
+                const rawVal = parseInt(input.value);
+                const val = (!isNaN(rawVal) && rawVal >= 0) ? rawVal : 1000;
                 input.value = val;
                 chrome.storage.local.get(['steps'], (data) => {
                     const steps = data.steps || [];
                     if (steps[idx]) {
                         steps[idx].delay = val;
-                        chrome.storage.local.set({ steps });
+                        chrome.storage.local.set({ steps }, () => {
+                            const badge = input.closest('.step-timing-badge');
+                            if (badge) {
+                                badge.classList.add('flash-saved');
+                                setTimeout(() => badge.classList.remove('flash-saved'), 800);
+                            }
+                        });
                     }
                 });
             });
@@ -473,7 +489,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             editModalTitle.textContent = `Edit Step #${index + 1}`;
             editStepType.value = step.action || 'smartClick';
-            editDelay.value = step.delay !== undefined ? step.delay : 1000;
+            const stepDelay = (step.delay !== undefined && !isNaN(Number(step.delay))) ? Math.max(0, Number(step.delay)) : 1000;
+            editDelay.value = stepDelay;
             editSelector.value = step.selector || '';
 
             handleEditTypeChange();
@@ -487,6 +504,17 @@ document.addEventListener('DOMContentLoaded', () => {
             editModal.style.display = 'flex';
         });
     }
+
+    // Modal Delay Chips Handler
+    document.querySelectorAll('.modal-chip-btn').forEach(chip => {
+        chip.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const delay = parseInt(chip.dataset.delay);
+            if (!isNaN(delay) && editDelay) {
+                editDelay.value = delay;
+            }
+        });
+    });
 
     function handleEditTypeChange() {
         const type = editStepType.value;
@@ -513,7 +541,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const step = steps[currentEditingIndex];
             step.action = editStepType.value;
-            step.delay = parseInt(editDelay.value) || 1000;
+            const parsedDelay = parseInt(editDelay.value);
+            step.delay = (!isNaN(parsedDelay) && parsedDelay >= 0) ? parsedDelay : 1000;
             step.selector = editSelector.value.trim() || step.selector;
 
             if (step.action === 'fillStatic') {
@@ -819,7 +848,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (globalClickDelay) {
         globalClickDelay.addEventListener('change', () => {
-            const val = Math.max(0, parseInt(globalClickDelay.value) || 1000);
+            const rawVal = parseInt(globalClickDelay.value);
+            const val = (!isNaN(rawVal) && rawVal >= 0) ? rawVal : 1000;
             globalClickDelay.value = val;
             chrome.storage.local.set({ defaultDelay: val });
             updateActivePreset(val);
@@ -832,20 +862,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     delayPresetBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            const val = parseInt(btn.dataset.delay) || 1000;
-            if (globalClickDelay) globalClickDelay.value = val;
-            chrome.storage.local.set({ defaultDelay: val });
-            updateActivePreset(val);
+            const val = parseInt(btn.dataset.delay);
+            if (!isNaN(val)) {
+                if (globalClickDelay) globalClickDelay.value = val;
+                chrome.storage.local.set({ defaultDelay: val });
+                updateActivePreset(val);
+            }
         });
     });
 
     if (applyDelayToAllBtn) {
         applyDelayToAllBtn.addEventListener('click', () => {
-            const val = Math.max(0, parseInt(globalClickDelay ? globalClickDelay.value : 1000) || 1000);
+            const rawVal = globalClickDelay ? parseInt(globalClickDelay.value) : 1000;
+            const val = (!isNaN(rawVal) && rawVal >= 0) ? rawVal : 1000;
             chrome.storage.local.get(['steps'], (data) => {
                 const steps = data.steps || [];
                 if (steps.length === 0) {
-                    alert('No steps in the list. Record or add some steps first!');
+                    alert('No steps in the list. Record some clicks first!');
                     return;
                 }
                 steps.forEach(s => {
@@ -854,12 +887,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 chrome.storage.local.set({ steps, defaultDelay: val }, () => {
                     renderSteps(steps);
                     const origText = applyDelayToAllBtn.textContent;
-                    applyDelayToAllBtn.textContent = '✓ Updated All!';
+                    applyDelayToAllBtn.textContent = `✓ All Set to ${val}ms!`;
                     applyDelayToAllBtn.style.color = '#34d399';
                     setTimeout(() => {
                         applyDelayToAllBtn.textContent = origText;
                         applyDelayToAllBtn.style.color = '';
-                    }, 1500);
+                    }, 1800);
                 });
             });
         });

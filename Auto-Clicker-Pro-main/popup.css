@@ -1994,30 +1994,79 @@ input:checked + .toggle-track.small .toggle-thumb { left: 14px; }
     box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
 }
 
-/* Inline Step Delay Input */
-.step-delay-inline {
+/* Step Timing Badge */
+.step-timing-badge {
     display: inline-flex;
     align-items: center;
     gap: 3px;
-    color: var(--text-muted);
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 6px;
+    padding: 2px 6px;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
 }
 
-.inline-step-delay-input {
-    width: 44px;
-    background: rgba(0, 0, 0, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    color: var(--text-primary);
-    font-size: 10px;
-    font-weight: 600;
-    padding: 1px 3px;
+.step-timing-badge:hover,
+.step-timing-badge:focus-within {
+    background: rgba(245, 158, 11, 0.22);
+    border-color: rgba(245, 158, 11, 0.65);
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
+}
+
+.step-timing-badge.flash-saved {
+    background: rgba(16, 185, 129, 0.25) !important;
+    border-color: #10b981 !important;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.4) !important;
+}
+
+.step-timing-badge .timing-icon {
+    font-size: 11px;
+    line-height: 1;
+}
+
+.step-timing-badge .inline-step-delay-input {
+    width: 48px;
+    background: transparent;
+    border: none;
+    color: #fbbf24;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: inherit;
     text-align: right;
     outline: none;
-    transition: border-color 0.2s;
+    padding: 0;
 }
 
-.inline-step-delay-input:focus {
-    border-color: var(--primary-light);
-    background: rgba(0, 0, 0, 0.4);
+.step-timing-badge .timing-unit {
+    font-size: 10px;
+    color: #fde68a;
+    font-weight: 600;
+}
+
+/* Modal Delay Chips */
+.modal-delay-chips {
+    display: flex;
+    gap: 5px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+
+.modal-chip-btn {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.modal-chip-btn:hover {
+    background: rgba(139, 92, 246, 0.25);
+    border-color: rgba(139, 92, 246, 0.5);
+    color: #c4b5fd;
 }
 

@@ -256,17 +256,20 @@
                     <span class="delay-icon">⏱️</span>
                     <span class="delay-label">Click Delay:</span>
                     <div class="delay-input-wrap">
-                        <input type="number" id="globalClickDelay" min="0" step="100" value="1000" title="Execution delay in milliseconds" />
+                        <input type="number" id="globalClickDelay" min="0" step="50" value="1000" title="Execution delay in milliseconds" />
                         <span class="delay-unit">ms</span>
                     </div>
                 </div>
                 <div class="delay-presets">
-                    <button class="delay-preset-btn" data-delay="300" title="Fast speed (300ms)">Fast (300ms)</button>
-                    <button class="delay-preset-btn active" data-delay="1000" title="Normal speed (1000ms)">Normal (1s)</button>
-                    <button class="delay-preset-btn" data-delay="2000" title="Slow speed (2000ms)">Slow (2s)</button>
+                    <button class="delay-preset-btn" data-delay="100" title="Ultra Fast speed (100ms)">100ms</button>
+                    <button class="delay-preset-btn" data-delay="300" title="Fast speed (300ms)">300ms</button>
+                    <button class="delay-preset-btn" data-delay="500" title="Moderate speed (500ms)">500ms</button>
+                    <button class="delay-preset-btn active" data-delay="1000" title="Normal speed (1000ms)">1s</button>
+                    <button class="delay-preset-btn" data-delay="2000" title="Slow speed (2000ms)">2s</button>
+                    <button class="delay-preset-btn" data-delay="3000" title="3 seconds delay">3s</button>
                 </div>
                 <button id="applyDelayToAllBtn" class="apply-delay-btn" title="Update timing delay for ALL existing steps to this value">
-                    ⚡ Set All Steps
+                    ⚡ Apply to All Steps
                 </button>
             </div>
 
@@ -308,8 +311,19 @@
             </div>
 
             <div class="modal-field-group">
-                <label for="editDelay">Step Delay Before Execution (ms):</label>
-                <input type="number" id="editDelay" min="0" step="100" value="1000" />
+                <label for="editDelay">Step Timing Delay (ms):</label>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <input type="number" id="editDelay" min="0" step="50" value="1000" style="flex:1;" />
+                    <span style="font-size:12px; color:var(--text-muted); font-weight:600;">ms</span>
+                </div>
+                <div class="modal-delay-chips">
+                    <button type="button" class="modal-chip-btn" data-delay="100">100ms</button>
+                    <button type="button" class="modal-chip-btn" data-delay="300">300ms</button>
+                    <button type="button" class="modal-chip-btn" data-delay="500">500ms</button>
+                    <button type="button" class="modal-chip-btn" data-delay="1000">1s</button>
+                    <button type="button" class="modal-chip-btn" data-delay="2000">2s</button>
+                    <button type="button" class="modal-chip-btn" data-delay="3000">3s</button>
+                </div>
             </div>
 
             <div class="modal-field-group">
